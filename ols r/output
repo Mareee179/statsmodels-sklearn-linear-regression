@@ -1,0 +1,119 @@
+> # Set working directory to where csv file is located
+> setwd("/home/michaeljgrogan/Documents/a_documents/computing/data science/datasets")
+> 
+> # Read the data
+> mydata<- read.csv("gasoline.csv")
+> attach(mydata)
+The following objects are masked from df (pos = 3):
+
+    capacity, consumption, hours, price
+
+The following objects are masked from mydata (pos = 4):
+
+    capacity, consumption, hours, price
+
+The following objects are masked from df (pos = 5):
+
+    capacity, consumption, hours, price
+
+The following objects are masked from mydata (pos = 6):
+
+    capacity, consumption, hours, price
+
+The following objects are masked from df (pos = 9):
+
+    capacity, consumption, hours
+
+The following objects are masked from mydata (pos = 10):
+
+    capacity, consumption, hours
+
+> 
+> df<-data.frame(consumption,capacity,price,hours)
+> attach(df)
+The following objects are masked from mydata (pos = 3):
+
+    capacity, consumption, hours, price
+
+The following objects are masked from df (pos = 4):
+
+    capacity, consumption, hours, price
+
+The following objects are masked from mydata (pos = 5):
+
+    capacity, consumption, hours, price
+
+The following objects are masked from df (pos = 6):
+
+    capacity, consumption, hours, price
+
+The following objects are masked from mydata (pos = 7):
+
+    capacity, consumption, hours, price
+
+The following objects are masked from df (pos = 10):
+
+    capacity, consumption, hours
+
+The following objects are masked from mydata (pos = 11):
+
+    capacity, consumption, hours
+
+> 
+> train=head(df,32)
+> test=head(df,8)
+> 
+> # OLS regression - stock_return (dependent variable) and dividend + earnings + debt_to_equity (independent variables)
+> reg1 <- lm(consumption ~ capacity + price + hours, data=train)
+> summary(reg1)
+
+Call:
+lm(formula = consumption ~ capacity + price + hours, data = train)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-333.40  -67.65    5.96   75.20  144.93 
+
+Coefficients:
+             Estimate Std. Error t value Pr(>|t|)  
+(Intercept) 275.18620  663.33899   0.415   0.6814  
+capacity     -6.54492    4.80236  -1.363   0.1838  
+price       220.55502   79.89369   2.761   0.0101 *
+hours         0.04849    0.02387   2.032   0.0518 .
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 108.9 on 28 degrees of freedom
+Multiple R-squared:  0.5419,	Adjusted R-squared:  0.4928 
+F-statistic: 11.04 on 3 and 28 DF,  p-value: 5.883e-05
+
+> 
+> plot(reg1)
+Hit <Return> to see next plot: 
+Hit <Return> to see next plot: 
+Hit <Return> to see next plot: 
+Hit <Return> to see next plot: 
+> #Install car library and regress independent variables
+> library(car)
+Loading required package: carData
+> 
+> #Variance Inflation Factor Test for multicollinearity
+> vif(reg1)
+capacity    price    hours 
+2.003143 1.054277 1.974485 
+> 
+> #Breusch-Pagan Test for Heteroscedasticity
+> library(lmtest)
+> bptest(reg1)
+
+	studentized Breusch-Pagan test
+
+data:  reg1
+BP = 3.8512, df = 3, p-value = 0.278
+
+> 
+> test_predict<-as.numeric(predict(reg1,test))
+> mse=(test_predict-test$consumption)/test$consumption
+> mse
+[1]  0.31965342  0.07699799  0.08800835  0.06157486  0.03164490  0.05818546 -0.03177502
+[8]  0.09278988
