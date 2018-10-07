@@ -1,0 +1,119 @@
+michaeljgrogan@michaeljgrogan-HP-Notebook:~$ python3
+Python 3.6.6 (default, Sep 12 2018, 18:26:19) 
+[GCC 8.0.1 20180414 (experimental) [trunk revision 259383]] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import numpy as np
+>>> import statsmodels.api as sm
+>>> import statsmodels.formula.api as smf
+>>> import pandas as pd
+>>> from sklearn.model_selection import train_test_split
+>>> import os;
+>>> path="/home/michaeljgrogan/Documents/a_documents/computing/data science/datasets"
+>>> os.chdir(path)
+>>> os.getcwd()
+'/home/michaeljgrogan/Documents/a_documents/computing/data science/datasets'
+>>> 
+>>> variables = pd.read_csv('gasoline.csv')
+>>> consumption = variables['consumption']
+>>> capacity = variables['capacity']
+>>> price = variables['price']
+>>> hours = variables['hours']
+>>> 
+>>> y = consumption
+>>> x = np.column_stack((capacity,price,hours))
+>>> x = sm.add_constant(x, prepend=True)
+>>> 
+>>> x_train,x_test,y_train,y_test=train_test_split(x,y,random_state=0)
+>>> 
+>>> results = smf.OLS(y_train,x_train).fit()
+>>> print(results.summary())
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:            consumption   R-squared:                       0.762
+Model:                            OLS   Adj. R-squared:                  0.734
+Method:                 Least Squares   F-statistic:                     27.72
+Date:                Sun, 07 Oct 2018   Prob (F-statistic):           2.93e-08
+Time:                        16:48:57   Log-Likelihood:                -181.02
+No. Observations:                  30   AIC:                             370.0
+Df Residuals:                      26   BIC:                             375.6
+Df Model:                           3                                         
+Covariance Type:            nonrobust                                         
+==============================================================================
+                 coef    std err          t      P>|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+const        157.9277    531.927      0.297      0.769    -935.463    1251.319
+x1            -8.1258      4.359     -1.864      0.074     -17.086       0.834
+x2           200.3928     77.056      2.601      0.015      42.001     358.785
+x3             0.0685      0.016      4.364      0.000       0.036       0.101
+==============================================================================
+Omnibus:                        4.677   Durbin-Watson:                   1.160
+Prob(Omnibus):                  0.096   Jarque-Bera (JB):                3.245
+Skew:                          -0.774   Prob(JB):                        0.197
+Kurtosis:                       3.444   Cond. No.                     4.10e+05
+==============================================================================
+
+Warnings:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+[2] The condition number is large, 4.1e+05. This might indicate that there are
+strong multicollinearity or other numerical problems.
+>>> 
+>>> import statsmodels
+>>> 
+>>> name = ['Lagrange multiplier statistic', 'p-value', 
+...         'f-value', 'f p-value']
+>>> bp = statsmodels.stats.diagnostic.het_breushpagan(results.resid, results.model.exog)
+>>> bp
+(3.5104844649737545, 0.3194048645556701, 1.148537377220442, 0.34816368231768746)
+>>> pd.DataFrame(name,bp)
+                                      0
+3.510484  Lagrange multiplier statistic
+0.319405                        p-value
+1.148537                        f-value
+0.348164                      f p-value
+>>> 
+>>> z = np.column_stack((capacity,price))
+>>> z = sm.add_constant(z, prepend=True)
+>>> 
+>>> from sklearn.metrics import r2_score
+>>> from sklearn import linear_model
+>>> lm = linear_model.LinearRegression()
+>>> model = lm.fit(z,hours)
+>>> predictions = lm.predict(z)
+>>> print(predictions)
+[14072.48585043 13693.61384188 13405.42449666 14307.1723462
+ 14448.22339131 14119.05060852 13498.18506552 14201.25114267
+ 13479.56552649 14086.96075169 14736.80572929 12972.99037447
+ 13383.17742762 14321.41188958 13749.68765919 13523.09588648
+ 13045.5465611  13863.65549489 15002.80726966 15134.45491176
+ 15207.30572045 16737.77289153 16038.06935441 16949.71366929
+ 14769.6944438  15112.93067629 16523.71898949 15988.22366706
+ 15980.0993119  16144.17223828 16585.55750652 14966.56160176
+ 15278.25301842 14743.59735905 16206.04597404 16676.8092563
+ 16222.04086768 16017.46080612 16315.54661668 17007.85980549]
+>>> 
+>>> rsquared=r2_score(hours, predictions)
+>>> rsquared
+0.5198862908709541
+>>> 
+>>> vifdividend=1/(1-(rsquared))
+>>> 
+>>> y_pred = results.predict(x_test)
+>>> print(y_pred)
+[1782.161739   1520.78970223 1607.0050501  1436.46031383 1485.46152932
+ 1345.93190007 1725.92235667 1363.48429628 1631.55660023 1718.88234168]
+>>> 
+>>> mse=(y_pred-y_test)/y_test
+>>> mse
+22    0.088011
+20   -0.066427
+25   -0.040021
+4     0.025311
+10    0.018137
+15   -0.129973
+28    0.018844
+11   -0.072460
+18    0.017180
+29    0.006961
+Name: consumption, dtype: float64
+>>> np.mean(mse)
+-0.013443734900480123
