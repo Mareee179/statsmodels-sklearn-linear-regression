@@ -6,13 +6,13 @@ mydata<- read.csv("gasoline.csv")
 attach(mydata)
 
 # Training and Test Data
-df<-data.frame(consumption,capacity,gasoline,hours)
+df<-data.frame(consumption,capacity,price,hours)
 attach(df)
 train=head(df,32)
 test=head(df,8)
 
-# OLS regression - consumption (dependent variable) and capacity + gasoline + hours (independent variables)
-reg1 <- lm(consumption ~ capacity + gasoline + hours, data=train)
+# OLS regression - consumption (dependent variable) and capacity + price + hours (independent variables)
+reg1 <- lm(consumption ~ capacity + price + hours, data=train)
 summary(reg1)
 plot(reg1)
 
